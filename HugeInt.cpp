@@ -90,7 +90,9 @@ HugeInt::HugeInt(int SmallNumber) // default integer constructor
 
 HugeInt::HugeInt(HugeInt & CopyHugeInt)
 {
-	delete [] number;
+	if(sign=='\0'||sign=='-'){
+		delete [] number;
+	}
 	size=CopyHugeInt.size;
 	number=new int[size];
 	sign=CopyHugeInt.sign;
@@ -139,11 +141,13 @@ void HugeInt::operator= (const HugeInt & BigNumber)
 HugeInt HugeInt::operator- (HugeInt BigNumber)
 {
 	HugeInt output;
-	int *copyThis = new int[size];
+	int copyThis[size];
+	int result[size];
+
 	for(int i=0; i<size; i++){
 		copyThis[i]=number[i];
 	}
-	
+
 	if(size==BigNumber.size){
 		int mode=1;
 		for(int i=0;i<size;i++){
@@ -152,8 +156,8 @@ HugeInt HugeInt::operator- (HugeInt BigNumber)
 				break;
 			}
 		}
+		cout<<mode<<endl;
 		switch(mode){
-			int result[size];
 			case 1: // A-B>=0
 				for(int i=size-1;i>=0;i--){
 					if(copyThis[i]<BigNumber.number[i]){
@@ -169,6 +173,7 @@ HugeInt HugeInt::operator- (HugeInt BigNumber)
 						output.number=new int[output.size];
 						for(int j=0;j<output.size;j++){
 							output.number[j]=result[i+j];
+							
 						}
 						break;
 					}
@@ -198,15 +203,22 @@ HugeInt HugeInt::operator- (HugeInt BigNumber)
 		return output;
 	}
 	else if(size>BigNumber.size){ // A-B>0
-		int result[size];
-		for(int i=size-1;i>=0;i--){
+		int i,j; // counter
+		for(i=size-1,j=BigNumber.size-1;i>=0,j>=0;i--,j--){
 			if(copyThis[i]<BigNumber.number[i]){
 				copyThis[i]+=10;
 				copyThis[i-1]--;
 			}
 			result[i]=copyThis[i]-BigNumber.number[i];
 		}
-		for(int i=0;i<size;i++){ // find size
+		for(j=i;j>=0;j--){
+			if(copyThis[i]<0){
+				copyThis[i]+=10;
+				copyThis[i-1]--;
+			}
+			result[i]=copyThis[i];
+		}
+		for(i=0;i<size;i++){ // find size
 			if(result[i]!=0){
 				output.size=size-i;
 				output.sign='\0';
@@ -220,13 +232,20 @@ HugeInt HugeInt::operator- (HugeInt BigNumber)
 		return output;
 	}
 	else{ // A-B<0
-		int result[size];
-		for(int i=size-1;i>=0;i--){
+		int i,j; // counter
+		for(i=BigNumber.size-1,j=size;i>=0,j>=0;i--,j--){
 			if(BigNumber.number[i]<copyThis[i]){
 				BigNumber.number[i]+=10;
 				BigNumber.number[i-1]--;
 			}
 			result[i]=BigNumber.number[i]-copyThis[i];
+		}
+		for(j=i;j>=0;j--){
+			if(BigNumber.number[i]<0){
+				BigNumber.number[i]+=10;
+				BigNumber.number[i-1]--;
+			}
+			result[i]=BigNumber.number[i];
 		}
 		for(int i=0;i<size;i++){ // find size
 			if(result[i]!=0){
@@ -241,5 +260,5 @@ HugeInt HugeInt::operator- (HugeInt BigNumber)
 		}
 		return output;
 	}
-	
+
 }
